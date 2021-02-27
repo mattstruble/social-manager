@@ -165,4 +165,3 @@ if __name__ == "__main__":
     config_reader = ConfigReader("bot.cfg")
     feed_reader = RSSReader(config_reader.rss)
     tweet_items(feed_reader, config_reader)
-    print(config_reader.twitter)
