@@ -1,0 +1,12 @@
+[RSS]
+feed_url=url
+
+[Twitter]
+consumer_key=key
+consumer_secret=secret
+access_token=token
+access_token_secret=secret
+
+[Log]
+output_log=output.log
+
