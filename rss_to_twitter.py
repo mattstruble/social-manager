@@ -1,4 +1,3 @@
-
 from social_manager.rss_reader import RSSReader
 from social_manager.twitter_handler import TwitterHandler
 
