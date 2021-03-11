@@ -132,7 +132,10 @@ dmypy.json
 .idea/
 
 # config
-bot.cfg
+twitter.cfg
+rss.cfg
 
-*.log
 *.dat
+
+logs/
+data/
