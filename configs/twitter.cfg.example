@@ -9,3 +9,6 @@ summary_split_val=Twitter
 summary_max_lines=2
 summary_max_len=230
 string_format="{title} \n\n {summary} \n\n {link}"
+
+[Search]
+hashtags=comma,separated,list

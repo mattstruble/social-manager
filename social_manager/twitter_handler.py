@@ -1,6 +1,24 @@
+from dataclasses import dataclass
+
 from twython import Twython, TwythonError
 
 from .base_handler import BaseHandler
+
+
+@dataclass
+class Tweet:
+    id: int
+    created_at: str
+    screen_name: str
+    text: str
+    favorited: bool
+    retweeted: bool
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __hash__(self):
+        return self.id
 
 
 class TwitterHandler(BaseHandler):
@@ -9,6 +27,7 @@ class TwitterHandler(BaseHandler):
 
         self.oauth_config = self.config["OAuth"]
         self.message_config = self.config["Message"]
+        self.search_config = self.config["Search"]
 
         self.twitter = Twython(
             app_key=self.oauth_config["consumer_key"],
@@ -16,6 +35,10 @@ class TwitterHandler(BaseHandler):
             oauth_token=self.oauth_config["access_token"],
             oauth_token_secret=self.oauth_config["access_token_secret"],
         )
+
+        # todo: save screen_name to data file
+        timeline = self.twitter.get_home_timeline(count=1)
+        self.screen_name = timeline[0]["user"]["screen_name"]
 
     def format_message(self, message, title="", link=""):
         summary_split_val = self.message_config["summary_split_val"]
@@ -69,3 +92,56 @@ class TwitterHandler(BaseHandler):
             self.twitter.update_status(status=message)
         except TwythonError as e:
             print(e)
+
+    def _search_result_generator(self, search_results, exclude_self=True):
+        statuses = (
+            search_results["statuses"]
+            if "statuses" in search_results
+            else search_results
+        )
+        for result in statuses:
+            tweet = Tweet(
+                result["id"],
+                result["created_at"],
+                result["user"]["screen_name"],
+                result["full_text"],
+                result["favorited"],
+                result["retweeted"],
+            )
+            if exclude_self and tweet.screen_name == self.screen_name:
+                continue
+
+            yield tweet
+
+    def get_search_results(self, exclude_self=True):
+        search_results = set()
+        for hashtag in self.search_config["hashtags"].split(","):
+            try:
+                search = self.twitter.search(
+                    q="#{}".format(hashtag),
+                    lang="en",
+                    since_id=0,
+                    tweet_mode="extended",
+                )
+
+                for tweet in self._search_result_generator(search, exclude_self):
+                    search_results.add(tweet)
+
+            except TwythonError as e:
+                print(e)
+
+        return search_results
+
+    def get_mentions(self, **params):
+        mention_results = set()
+        try:
+            mentions = self.twitter.get_mentions_timeline(
+                tweet_mode="extended", lang="en", **params
+            )
+
+            for tweet in self._search_result_generator(mentions):
+                mention_results.add(tweet)
+        except TwythonError as e:
+            print(e)
+
+        return mention_results
