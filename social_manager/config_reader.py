@@ -19,7 +19,6 @@ class ConfigReader:
                 for key, val in self.config_parser.items(section):
                     self.config[key] = deepcopy(val)
 
-
     def __getitem__(self, item):
         return self.config[item]
 

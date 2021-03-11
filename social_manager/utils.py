@@ -1,4 +1,5 @@
 import os
+
 from .config_reader import ConfigReader
 
 _SOCIAL_MANAGER_CFG = ConfigReader("configs/social_manager.cfg")

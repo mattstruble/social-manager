@@ -1,8 +1,9 @@
 from twython import Twython, TwythonError
+
 from .base_handler import BaseHandler
 
-class TwitterHandler(BaseHandler):
 
+class TwitterHandler(BaseHandler):
     def __init__(self):
         super().__init__("configs/twitter.cfg")
 
@@ -49,7 +50,7 @@ class TwitterHandler(BaseHandler):
         summary = (
             summary
             if len(summary) <= summary_max_len
-            else summary[0: summary_max_len - 3] + "..."
+            else summary[0 : summary_max_len - 3] + "..."
         )
 
         # Combine data dictionary and message format dictionaries to pass into string format
