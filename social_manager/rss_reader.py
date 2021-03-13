@@ -48,8 +48,8 @@ class RSSReader:
         with open(self.data_file, "w") as f:
             json.dump(self.saved_data, f)
 
-    def auto_saving_items_generator(self):
-        for feed_item in self.feed_items:
+    def auto_saving_items_generator(self, limit=5):
+        for feed_item in self.feed_items[:limit]:
             try:
                 yield feed_item
                 self.saved_data["last_id"] = feed_item.id
