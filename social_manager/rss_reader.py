@@ -82,7 +82,7 @@ class RSSReader:
         for item in self.feed_parser["items"]:
             id = int(item["id"][11:])
             title = item["title"]
-            link = item["links"][0]["href"]
+            link = item["links"][0]["href"].split(".mp3")[0]
             summary = item["summary"]
 
             feed_item = FeedItem(id=id, title=title, summary=summary, link=link)
