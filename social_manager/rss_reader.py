@@ -61,14 +61,12 @@ class RSSReader:
 
         i = 0
         for feed_item in self.feed_items:
-            print(feed_item.id)
             if feed_item.id > int(self.saved_data["last_id"]):
                 break
             i+=1
 
         self.feed_items = self.feed_items[i:]
 
-        print(self.feed_items)
 
     def _parse_feed_items(self):
         for item in self.feed_parser["items"]:
