@@ -1,8 +1,13 @@
+import logging
 from dataclasses import dataclass
 
 from twython import Twython, TwythonError
 
 from .base_handler import BaseHandler
+from .utils import setup_logger
+
+logger = logging.getLogger(__name__)
+setup_logger(logger)
 
 
 @dataclass
@@ -41,6 +46,9 @@ class TwitterHandler(BaseHandler):
         self.screen_name = timeline[0]["user"]["screen_name"]
 
     def format_message(self, message, title="", link=""):
+        logger.debug(
+            "Formatting message={}, title={}, link={}".format(message, title, link)
+        )
         summary_split_val = self.message_config["summary_split_val"]
         summary_max_lines = int(self.message_config["summary_max_lines"])
         summary_max_len = int(self.message_config["summary_max_len"])
@@ -88,10 +96,11 @@ class TwitterHandler(BaseHandler):
         return message
 
     def post(self, message):
+        logger.debug("Posting message={}".format(message))
         try:
             self.twitter.update_status(status=message)
         except TwythonError as e:
-            print(e)
+            logger.error(e)
 
     def _search_result_generator(self, search_results, exclude_self=True):
         statuses = (
@@ -114,6 +123,7 @@ class TwitterHandler(BaseHandler):
             yield tweet
 
     def get_search_results(self, exclude_self=True):
+        logger.debug("get_search_results exclude_self={}".format(exclude_self))
         search_results = set()
         for hashtag in self.search_config["hashtags"].split(","):
             try:
@@ -128,11 +138,12 @@ class TwitterHandler(BaseHandler):
                     search_results.add(tweet)
 
             except TwythonError as e:
-                print(e)
+                logger.error(e)
 
         return search_results
 
     def get_mentions(self, **params):
+        logger.debug("get_mentions params={}".format(params))
         mention_results = set()
         try:
             mentions = self.twitter.get_mentions_timeline(
@@ -142,6 +153,6 @@ class TwitterHandler(BaseHandler):
             for tweet in self._search_result_generator(mentions):
                 mention_results.add(tweet)
         except TwythonError as e:
-            print(e)
+            logger.error(e)
 
         return mention_results
