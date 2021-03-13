@@ -24,7 +24,7 @@ def get_log_dir():
     return _SOCIAL_MANAGER_CFG["log_dir"]
 
 
-def setup_logger(logger, stream_level=logging.INFO, file_level=logging.DEBUG):
+def setup_logger(logger, stream_level=logging.INFO, file_level=logging.INFO):
     file_path = os.path.join(get_log_dir(), "social_manager.log")
     formatter = logging.Formatter(
         fmt="%(asctime)s.%(msecs)06d: %(name)s] %(message)s",
