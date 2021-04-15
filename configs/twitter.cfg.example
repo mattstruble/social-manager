@@ -12,3 +12,7 @@ string_format="{title} \n\n {summary} \n\n {link}"
 
 [Search]
 hashtags=comma,separated,list
+
+[RateLimiter]
+max_calls=10
+period=1

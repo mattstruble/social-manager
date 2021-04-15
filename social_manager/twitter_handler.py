@@ -49,6 +49,7 @@ class TwitterHandler(BaseHandler):
         logger.debug(
             "Formatting message={}, title={}, link={}".format(message, title, link)
         )
+
         summary_split_val = self.message_config["summary_split_val"]
         summary_max_lines = int(self.message_config["summary_max_lines"])
         summary_max_len = int(self.message_config["summary_max_len"])
@@ -97,10 +98,9 @@ class TwitterHandler(BaseHandler):
 
     def post(self, message):
         logger.debug("Posting message={}".format(message))
-        try:
+
+        with self.rate_limiter:
             self.twitter.update_status(status=message)
-        except TwythonError as e:
-            logger.error(e)
 
     def _search_result_generator(self, search_results, exclude_self=True):
         statuses = (
@@ -124,9 +124,10 @@ class TwitterHandler(BaseHandler):
 
     def get_search_results(self, exclude_self=True):
         logger.debug("get_search_results exclude_self={}".format(exclude_self))
+
         search_results = set()
         for hashtag in self.search_config["hashtags"].split(","):
-            try:
+            with self.rate_limiter:
                 search = self.twitter.search(
                     q="#{}".format(hashtag),
                     lang="en",
@@ -134,25 +135,21 @@ class TwitterHandler(BaseHandler):
                     tweet_mode="extended",
                 )
 
-                for tweet in self._search_result_generator(search, exclude_self):
-                    search_results.add(tweet)
-
-            except TwythonError as e:
-                logger.error(e)
+            for tweet in self._search_result_generator(search, exclude_self):
+                search_results.add(tweet)
 
         return search_results
 
     def get_mentions(self, **params):
         logger.debug("get_mentions params={}".format(params))
         mention_results = set()
-        try:
+
+        with self.rate_limiter:
             mentions = self.twitter.get_mentions_timeline(
                 tweet_mode="extended", lang="en", **params
             )
 
-            for tweet in self._search_result_generator(mentions):
-                mention_results.add(tweet)
-        except TwythonError as e:
-            logger.error(e)
+        for tweet in self._search_result_generator(mentions):
+            mention_results.add(tweet)
 
         return mention_results

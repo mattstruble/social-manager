@@ -3,6 +3,7 @@ import re
 from .config_reader import ConfigReader
 from .utils import get_data_dir, get_log_dir
 
+from ratelimiter import RateLimiter
 
 class BaseHandler:
     HTML_CLEANER = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
@@ -12,6 +13,11 @@ class BaseHandler:
         self.log_dir = get_log_dir()
 
         self.config = ConfigReader(config_path)
+
+        self.rate_limit_config = self.config["RateLimiter"]
+        max_calls = int(self.rate_limit_config["max_calls"])
+        period = int(self.rate_limit_config["period"])
+        self.rate_limiter = RateLimiter(max_calls=max_calls, period=period)
 
     def format_message(self, message, title="", link=""):
         raise NotImplementedError
