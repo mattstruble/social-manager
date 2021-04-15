@@ -37,7 +37,7 @@ class RSSReader:
         else:
             self.saved_data = {"etag": "", "last_id": 0}
 
-        self.feed_parser = feedparser.parse(self.feed_url, etag=self.saved_data["etag"])
+        self.feed_parser = feedparser.parse(self.feed_url)
 
         self.feed_items = []
         if self.feed_parser:
@@ -53,12 +53,12 @@ class RSSReader:
             json.dump(self.saved_data, f)
 
     def auto_saving_items_generator(self, limit=5):
-        for feed_item in self.feed_items[:limit]:
             try:
-                yield feed_item
-                self.saved_data["last_id"] = feed_item.id
+                for feed_item in self.feed_items[:limit]:
+                    yield feed_item
+                    self.saved_data["last_id"] = feed_item.id
             except Exception as e:
-                logger.error("Encountered unknown error: {}".format(e))
+                logger.error("Encountered error: {}".format(e))
             finally:
                 self.save()
 
