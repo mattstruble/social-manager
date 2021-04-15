@@ -1,7 +1,6 @@
 [General]
 feed_url=url
-
-
+feed_limit=5
 
 
 
