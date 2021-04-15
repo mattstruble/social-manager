@@ -100,7 +100,11 @@ class TwitterHandler(BaseHandler):
         logger.debug("Posting message={}".format(message))
 
         with self.rate_limiter:
-            self.twitter.update_status(status=message)
+            try:
+                self.twitter.update_status(status=message)
+            except Exception as e:
+                logger.exception(e)
+                raise e
 
     def _search_result_generator(self, search_results, exclude_self=True):
         statuses = (
@@ -128,12 +132,16 @@ class TwitterHandler(BaseHandler):
         search_results = set()
         for hashtag in self.search_config["hashtags"].split(","):
             with self.rate_limiter:
-                search = self.twitter.search(
-                    q="#{}".format(hashtag),
-                    lang="en",
-                    since_id=0,
-                    tweet_mode="extended",
-                )
+                try:
+                    search = self.twitter.search(
+                        q="#{}".format(hashtag),
+                        lang="en",
+                        since_id=0,
+                        tweet_mode="extended",
+                    )
+                except Exception as e:
+                    logger.exception(e)
+                    raise e
 
             for tweet in self._search_result_generator(search, exclude_self):
                 search_results.add(tweet)
@@ -145,9 +153,13 @@ class TwitterHandler(BaseHandler):
         mention_results = set()
 
         with self.rate_limiter:
-            mentions = self.twitter.get_mentions_timeline(
-                tweet_mode="extended", lang="en", **params
-            )
+            try:
+                mentions = self.twitter.get_mentions_timeline(
+                    tweet_mode="extended", lang="en", **params
+                )
+            except Exception as e:
+                logger.exception(e)
+                raise e
 
         for tweet in self._search_result_generator(mentions):
             mention_results.add(tweet)

@@ -54,14 +54,12 @@ class RSSReader:
             json.dump(self.saved_data, f)
 
     def auto_saving_items_generator(self):
-            try:
-                for feed_item in self.feed_items[:self.feed_limit]:
-                    yield feed_item
-                    self.saved_data["last_id"] = feed_item.id
-            except Exception as e:
-                logger.error("Encountered error: {}".format(e))
-            finally:
-                self.save()
+        try:
+            for feed_item in self.feed_items[: self.feed_limit]:
+                yield feed_item
+                self.saved_data["last_id"] = feed_item.id
+        finally:
+            self.save()
 
     def _filter_feed_items(self):
         logger.debug("Filtering feed items...")

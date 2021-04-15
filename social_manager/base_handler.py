@@ -1,9 +1,10 @@
 import re
 
+from ratelimiter import RateLimiter
+
 from .config_reader import ConfigReader
 from .utils import get_data_dir, get_log_dir
 
-from ratelimiter import RateLimiter
 
 class BaseHandler:
     HTML_CLEANER = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
