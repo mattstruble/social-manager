@@ -26,6 +26,7 @@ class RSSReader:
         self.config = ConfigReader("configs/rss.cfg")
 
         self.feed_url = self.config["feed_url"]
+        self.feed_limit = int(self.config["feed_limit"])
         self.data_file = os.path.join(get_data_dir(), "rss.json")
 
         # Load in previous RSS etag to only collect newest feed information
@@ -52,9 +53,9 @@ class RSSReader:
             logger.info("Saving {} to file {}".format(self.saved_data, self.data_file))
             json.dump(self.saved_data, f)
 
-    def auto_saving_items_generator(self, limit=5):
+    def auto_saving_items_generator(self):
             try:
-                for feed_item in self.feed_items[:limit]:
+                for feed_item in self.feed_items[:self.feed_limit]:
                     yield feed_item
                     self.saved_data["last_id"] = feed_item.id
             except Exception as e:
