@@ -3,13 +3,12 @@ import logging
 import os
 from copy import deepcopy
 from dataclasses import dataclass
+from types import FunctionType
 
 import feedparser
 
 from social_manager.config_reader import ConfigReader
 from social_manager.utils import get_data_dir, setup_logger
-
-from types import FunctionType
 
 logger = logging.getLogger(__name__)
 setup_logger(logger)

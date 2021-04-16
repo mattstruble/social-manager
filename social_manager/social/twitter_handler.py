@@ -3,8 +3,9 @@ from dataclasses import dataclass
 
 from twython import Twython
 
-from .base_handler import BaseHandler
 from social_manager.utils import setup_logger
+
+from .base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
 setup_logger(logger)
