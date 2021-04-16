@@ -1,0 +1,8 @@
+tensorflow
+gensim
+sklearn
+pandas
+nltk
+numpy
+tqdm
+wget
