@@ -1,4 +1,5 @@
-from social_manager.rss_reader import RSSReader
+from social_manager.rss import RSSReader
+from social_manager.rss.parsers import buzzsprout_parser
 from social_manager.twitter_handler import TwitterHandler
 
 
@@ -9,6 +10,6 @@ def tweet_items(feed_reader: RSSReader, handler):
 
 
 if __name__ == "__main__":
-    feed_reader = RSSReader()
+    feed_reader = RSSReader(buzzsprout_parser)
     twitter_handler = TwitterHandler()
     tweet_items(feed_reader, twitter_handler)

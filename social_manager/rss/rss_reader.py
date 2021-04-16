@@ -6,15 +6,17 @@ from dataclasses import dataclass
 
 import feedparser
 
-from .config_reader import ConfigReader
-from .utils import get_data_dir, setup_logger
+from social_manager.config_reader import ConfigReader
+from social_manager.utils import get_data_dir, setup_logger
+
+from types import FunctionType
 
 logger = logging.getLogger(__name__)
 setup_logger(logger)
 
 
 @dataclass
-class FeedItem:
+class RSSItem:
     id: int
     title: str
     summary: str
@@ -22,12 +24,14 @@ class FeedItem:
 
 
 class RSSReader:
-    def __init__(self):
+    def __init__(self, rss_parser: FunctionType):
         self.config = ConfigReader("configs/rss.cfg")
 
         self.feed_url = self.config["feed_url"]
         self.feed_limit = int(self.config["feed_limit"])
         self.data_file = os.path.join(get_data_dir(), "rss.json")
+
+        self.rss_parser = rss_parser
 
         # Load in previous RSS etag to only collect newest feed information
         etag = ""
@@ -40,9 +44,7 @@ class RSSReader:
 
         self.feed_parser = feedparser.parse(self.feed_url)
 
-        self.feed_items = []
-        if self.feed_parser:
-            self._parse_feed_items()
+        self.feed_items = list(map(self.rss_parser, self.feed_parser["items"]))
 
         self._filter_feed_items()
 
@@ -75,16 +77,3 @@ class RSSReader:
         logger.debug(
             "Filtered feed items down to {} item(s).".format(len(self.feed_items))
         )
-
-    def _parse_feed_items(self):
-        logger.debug("Parsing feed items...")
-        for item in self.feed_parser["items"]:
-            id = int(item["id"][11:])
-            title = item["title"]
-            link = item["links"][0]["href"].split(".mp3")[0]
-            summary = item["summary"]
-
-            feed_item = FeedItem(id=id, title=title, summary=summary, link=link)
-            self.feed_items.append(deepcopy(feed_item))
-
-        logger.debug("Found {} feed item(s).".format(len(self.feed_items)))
