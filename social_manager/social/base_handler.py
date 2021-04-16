@@ -2,8 +2,8 @@ import re
 
 from ratelimiter import RateLimiter
 
-from .config_reader import ConfigReader
-from .utils import get_data_dir, get_log_dir
+from social_manager.config_reader import ConfigReader
+from social_manager.utils import get_data_dir, get_log_dir
 
 
 class BaseHandler:

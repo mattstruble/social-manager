@@ -1,10 +1,10 @@
 import logging
 from dataclasses import dataclass
 
-from twython import Twython, TwythonError
+from twython import Twython
 
 from .base_handler import BaseHandler
-from .utils import setup_logger
+from social_manager.utils import setup_logger
 
 logger = logging.getLogger(__name__)
 setup_logger(logger)

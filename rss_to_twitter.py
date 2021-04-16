@@ -1,6 +1,6 @@
 from social_manager.rss import RSSReader
 from social_manager.rss.parsers import buzzsprout_parser
-from social_manager.twitter_handler import TwitterHandler
+from social_manager.social import TwitterHandler
 
 
 def tweet_items(feed_reader: RSSReader, handler):
