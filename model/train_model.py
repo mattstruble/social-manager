@@ -17,8 +17,10 @@ tqdm.pandas(desc="progress-bar")
 
 import pickle
 
+import tensorflow as tf
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import scale
 
 sentiment_dataset_url = "http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip"
 data_dir = "data"
@@ -57,13 +59,15 @@ def ingest(training_file):
     )
     data.drop(["id", "date", "query", "user"], axis=1, inplace=True)
     data = data[data.sentiment.isnull() == False]
-    data["sentiment"] = data["sentiment"].map(int)
+    data["sentiment"] = data["sentiment"].map(lambda x: int(min(1, x)))
     data = data[data.text.isnull() == False]
     data.reset_index(inplace=True)
     data.drop("index", axis=1, inplace=True)
 
     print(data.head(4))
+    print(data.tail(4))
     print(data.shape)
+    print(data["sentiment"].unique())
 
     return data
 
@@ -101,9 +105,9 @@ def tag_tweets(tweets, tag_name):
 
 def train_w2v(x_train, vector_size):
     w2v = Word2Vec(vector_size=vector_size, min_count=10)
-    w2v.build_vocab([x.words for x in tqdm(x_train, desc="building w2v vocab")])
+    w2v.build_vocab(x_train)
     w2v.train(
-        [x.words for x in tqdm(x_train, desc="training w2v")],
+        x_train,
         total_examples=w2v.corpus_count,
         epochs=w2v.epochs,
     )
@@ -113,14 +117,29 @@ def train_w2v(x_train, vector_size):
 
 def train_tfidf(x_train):
     vectorizer = TfidfVectorizer(min_df=10, lowercase=False)
-    _ = vectorizer.fit([" ".join(x.words) for x in tqdm(x_train, desc="fitting tfidf")])
+    _ = vectorizer.fit([" ".join(words) for words in x_train])
     tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
 
     return tfidf
 
 
+def weighted_vector(tokens, n_dim, w2v, tfidf):
+    vec = np.zeros((1, n_dim))
+    count = 0.0
+
+    for word in tokens:
+        if word in w2v and word in tfidf:
+            vec += w2v[word].reshape((1, n_dim)) * tfidf[word]
+            count += 1.0
+
+    if count != 0:
+        vec /= count
+
+    return vec
+
+
 if __name__ == "__main__":
-    n_dim = 100
+    n_dim = 200
 
     if not os.path.exists("preprocessed_data.plk"):
         training_file = load_data(sentiment_dataset_url)
@@ -134,7 +153,6 @@ if __name__ == "__main__":
     x_train, x_test, y_train, y_test = train_test_split(
         np.array(data.tokens), np.array(data.sentiment), test_size=0.2
     )
-    x_train, x_test = tag_tweets(x_train, "TRAIN"), tag_tweets(x_test, "TEST")
 
     if not os.path.exists("word2vec.pkl") or not os.path.exists("tfidf.pkl"):
         w2v = train_w2v(x_train, n_dim)
@@ -151,5 +169,31 @@ if __name__ == "__main__":
         with open("tfidf.pkl", "rb") as f:
             tfidf = pickle.load(f)
 
-    print(data.head(5))
-    print(data.shape)
+    train_vecs = scale(
+        np.concatenate(
+            [weighted_vector(tokens, n_dim, w2v, tfidf) for tokens in x_train]
+        )
+    )
+    test_vecs = scale(
+        np.concatenate(
+            [weighted_vector(tokens, n_dim, w2v, tfidf) for tokens in x_test]
+        )
+    )
+
+    print(train_vecs.shape, test_vecs.shape)
+
+    model = tf.keras.Sequential(
+        [
+            tf.keras.layers.Dense(32, activation="relu", input_dim=n_dim),
+            tf.keras.layers.Dense(1, activation="sigmoid"),
+        ]
+    )
+
+    model.compile(optimizer="rmsprop", loss="binary_crossentropy", metrics=["accuracy"])
+
+    model.fit(train_vecs, y_train, epochs=10, batch_size=32)
+
+    score = model.evaluate(test_vecs, y_test, batch_size=128)
+    print(score)
+
+    model.save("sentiment-model.h5")
