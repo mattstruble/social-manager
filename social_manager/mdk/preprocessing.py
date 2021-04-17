@@ -5,7 +5,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.tokenize import word_tokenize, TweetTokenizer
+from nltk.tokenize import TweetTokenizer, word_tokenize
 
 from social_manager.mdk.text_replacement import (apostrophe_dict,
                                                  short_word_dict)
@@ -30,30 +30,28 @@ def clean_words(text):
     for key, value in short_word_dict.items():
         text = re.sub("(\\s|^)" + key + "(\\s|$)", " %s " % value, text)
 
-    text = re.sub("\n", " ", text)
-    text = re.sub("\r", " ", text)
-    text = re.sub("\t", " ", text)
-    text = re.sub('"', "", text)
-    text = re.sub("'", "", text)
-    text = re.sub("[ ]+", " ", text)
-    text = text.strip()
-    text = re.sub("\d+", "", text)
+    text = re.sub("\n|\r|\t|[ ]+", " ", text)
+    text = re.sub("\"|'|\d+|[^A-Za-z\s@#]+", "", text)
 
     return text
 
 
+def __tweet_filter(text):
+    return (
+        len(text) > 0
+        and text not in __english_stopwords
+        and not text.startswith("@")
+        and not text.startswith("#")
+        and not text.startswith("http")
+    )
+
+
 def tokenize(text):
-    text = __tokenizer.tokenize(text) #word_tokenize(text)
-    text = filter(lambda x: not x.startswith("@"), text)
-    text = filter(lambda x: not x.startswith("#"), text)
-    text = filter(lambda x: not x.startswith("http"), text)
-    text = map(lambda x: re.sub("[^A-Za-z\s]+", "", x), text)
-    text = filter(lambda x: x not in __english_stopwords, text)
-    text = map(lambda x: __lemmatizing.lemmatize(x, "v"), text)
-    text = filter(lambda x: len(x) > 0, text)
-    return list(text)
+    tokens = __tokenizer.tokenize(text)  # word_tokenize(text)
+    tokens = filter(__tweet_filter, tokens)
+    tokens = map(lambda x: __lemmatizing.lemmatize(x, "v"), tokens)
+    return list(tokens)
+
 
 def preprocess(text):
-    clean = clean_words(text)
-    tokens = tokenize(clean)
-    return tokens
+    return tokenize(clean_words(text))
