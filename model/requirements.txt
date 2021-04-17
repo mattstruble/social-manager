@@ -6,3 +6,5 @@ nltk
 numpy
 tqdm
 wget
+pyyaml
+h5py
