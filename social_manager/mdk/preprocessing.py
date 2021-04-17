@@ -5,7 +5,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, TweetTokenizer
 
 from social_manager.mdk.text_replacement import (apostrophe_dict,
                                                  short_word_dict)
@@ -14,13 +14,16 @@ nltk.download("stopwords")
 nltk.download("wordnet")
 nltk.download("punkt")
 
-stemming = SnowballStemmer("english")
-lemmatizing = WordNetLemmatizer()
-html_parser = HTMLParser()
-english_stopwords = set(stopwords.words("english"))
+__stemming = SnowballStemmer("english")
+__lemmatizing = WordNetLemmatizer()
+__html_parser = HTMLParser()
+__english_stopwords = set(stopwords.words("english"))
+__tokenizer = TweetTokenizer()
 
 
 def clean_words(text):
+    text = text.lower()
+
     for key, value in apostrophe_dict.items():
         text = re.sub(key, value, text)
 
@@ -32,7 +35,6 @@ def clean_words(text):
     text = re.sub("\t", " ", text)
     text = re.sub('"', "", text)
     text = re.sub("'", "", text)
-    text = re.sub("[^A-Za-z\s]+", "", text)
     text = re.sub("[ ]+", " ", text)
     text = text.strip()
     text = re.sub("\d+", "", text)
@@ -41,17 +43,17 @@ def clean_words(text):
 
 
 def tokenize(text):
-    text = word_tokenize(text)
-    text = filter(lambda x: x not in english_stopwords, text)
-    text = map(lambda x: lemmatizing.lemmatize(x, "v"), text)
+    text = __tokenizer.tokenize(text) #word_tokenize(text)
+    text = filter(lambda x: not x.startswith("@"), text)
+    text = filter(lambda x: not x.startswith("#"), text)
+    text = filter(lambda x: not x.startswith("http"), text)
+    text = map(lambda x: re.sub("[^A-Za-z\s]+", "", x), text)
+    text = filter(lambda x: x not in __english_stopwords, text)
+    text = map(lambda x: __lemmatizing.lemmatize(x, "v"), text)
+    text = filter(lambda x: len(x) > 0, text)
     return list(text)
 
-
-if __name__ == "__main__":
-    cleaned = clean_words(
-        'The just do it latest lgtm ttyl Tweets from Tweet (@tweet): "WhatsApp cofounder: It\'s time to delete Facebook https://t.co/q7gnbEhJkH"'
-    )
-    tokenized = tokenize(cleaned)
-
-    print(cleaned)
-    print(tokenized)
+def preprocess(text):
+    clean = clean_words(text)
+    tokens = tokenize(clean)
+    return tokens
