@@ -326,7 +326,11 @@ class __WikipediaDetox(__Model):
         def replace_str_tokens(text):
             return re.sub("NEWLINE_TOKEN|TAB_TOKEN", " ", text)
 
+        def map_values_to_binary(value):
+            return 0.0 if value < 0.3 else 1.0
+
         data["comment"] = data["comment"].map(replace_str_tokens)
+        data[self.__name__] = data[self.__name__].map(map_values_to_binary)
 
         data[self.token_column_name] = data["comment"].progress_map(preprocess)
         data = data.rename(columns={self.__name__: self.target_column_name})
@@ -348,7 +352,7 @@ class ToxicityModel(__WikipediaDetox):
 
     More information can be found at https://meta.wikimedia.org/wiki/Research:Detox/Data_Release.
 
-    The model's output is a range of toxicity [0-1] (0=neutral/healthy, 1=toxic).
+    The model's output is a prediction of toxicity (0=neutral/healthy, 1=toxic).
     """
 
     def __init__(self):
@@ -366,7 +370,7 @@ class AttackModel(__WikipediaDetox):
 
     More information can be found at https://meta.wikimedia.org/wiki/Research:Detox/Data_Release.
 
-    The model's output is a range of personal attack [0-1] (0=non-attack, 1=attack).
+    The model's output is a prediction of personal attack (0=non-attack, 1=attack).
     """
 
     def __init__(self):
@@ -384,7 +388,7 @@ class AggressionModel(__WikipediaDetox):
 
     More information can be found at https://meta.wikimedia.org/wiki/Research:Detox/Data_Release.
 
-    The model's output is a range of aggression [0-1] (0=neutral/friendly, 1=aggressive).
+    The model's output is a prediction of aggression (0=neutral/friendly, 1=aggressive).
     """
 
     def __init__(self):
