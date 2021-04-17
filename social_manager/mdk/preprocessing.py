@@ -7,8 +7,8 @@ from nltk.stem import SnowballStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
-from social_manager.models.text_replacement import (apostrophe_dict,
-                                                    short_word_dict)
+from social_manager.mdk.text_replacement import (apostrophe_dict,
+                                                 short_word_dict)
 
 nltk.download("stopwords")
 nltk.download("wordnet")
@@ -47,12 +47,11 @@ def tokenize(text):
     return list(text)
 
 
-from social_manager.models.base_model import Model
+if __name__ == "__main__":
+    cleaned = clean_words(
+        'The just do it latest lgtm ttyl Tweets from Tweet (@tweet): "WhatsApp cofounder: It\'s time to delete Facebook https://t.co/q7gnbEhJkH"'
+    )
+    tokenized = tokenize(cleaned)
 
-m = Model()
-cleaned = clean_words(
-    'The just do it latest lgtm ttyl Tweets from Tweet (@tweet): "WhatsApp cofounder: It\'s time to delete Facebook https://t.co/q7gnbEhJkH"'
-)
-tokenized = tokenize(cleaned)
-print(cleaned)
-print(tokenized)
+    print(cleaned)
+    print(tokenized)
