@@ -1,3 +1,5 @@
+import numpy as np
+
 from social_manager.mdk.models import (AggressionModel, AttackModel,
                                        SentimentModel, ToxicityModel)
 
@@ -19,9 +21,14 @@ for text in example_texts:
     print(tokenized)
 
 if __name__ == "__main__":
-    models = [ToxicityModel(), AggressionModel(), AttackModel()]
+    models = [SentimentModel(), ToxicityModel(), AggressionModel(), AttackModel()]
     for model in models:
-        model.train(force=True)
+        model.train()
 
+    vec = np.zeros((1, len(example_texts)))
     for model in models:
-        print(model.__name__, model.predict(example_texts))
+        # preds = np.array(model.predict(example_texts)).reshape((1, len(example_texts)))
+        vec += model.predict(example_texts).reshape((1, len(example_texts)))
+
+    vec /= float(len(example_texts))
+    print(vec)

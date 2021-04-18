@@ -176,6 +176,7 @@ class __Model:
             data = self.preprocess()
             self._log("Data successfully completed.")
         else:
+            self._log("Processed data is already up-to-date!")
             with open(self.processed_data_fname, "rb") as f:
                 data = pickle.load(f)
 
@@ -198,10 +199,14 @@ class __Model:
             test_vecs = self.preprocess_model(x_test)
 
             self.model = self._train_model(train_vecs, y_train, test_vecs, y_test)
+        else:
+            self._log("Models are already up-to-date!")
 
         if os.path.exists(self.data_dir):
-            self._log("Training complete, cleaning up {}".format(self.data_dir))
+            self._log("Cleaning up {}.".format(self.data_dir))
             shutil.rmtree(self.data_dir)
+
+        self._log("Training completed successfully.")
 
     def _train_w2v(self, x_train):
         self._log("Training word2vec...")
