@@ -1,9 +1,11 @@
+import os
 import logging
+
 from dataclasses import dataclass
 
 from twython import Twython
 
-from social_manager.utils import setup_logger
+from social_manager.utils import setup_logger, CONFIG_DIR
 
 from .base_handler import BaseHandler
 
@@ -29,7 +31,7 @@ class Tweet:
 
 class TwitterHandler(BaseHandler):
     def __init__(self):
-        super().__init__("configs/twitter.cfg")
+        super().__init__(os.path.join(CONFIG_DIR, "twitter.cfg"))
 
         self.oauth_config = self.config["OAuth"]
         self.message_config = self.config["Message"]

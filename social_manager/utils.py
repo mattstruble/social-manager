@@ -4,7 +4,12 @@ import sys
 
 from .config_reader import ConfigReader
 
-_SOCIAL_MANAGER_CFG = ConfigReader("configs/social_manager.cfg")
+def is_docker_container():
+    return "IN_DOCKER_CONTAINER" in os.environ
+
+
+CONFIG_DIR = "/config" if is_docker_container() else "configs"
+_SOCIAL_MANAGER_CFG = ConfigReader(os.path.join(CONFIG_DIR, "social_manager.cfg"))
 
 
 def _gen_dir(dir_name):
@@ -13,12 +18,18 @@ def _gen_dir(dir_name):
 
 
 def get_data_dir():
+    if is_docker_container():
+        return "/data"
+
     _gen_dir(_SOCIAL_MANAGER_CFG["data_dir"])
 
     return _SOCIAL_MANAGER_CFG["data_dir"]
 
 
 def get_log_dir():
+    if is_docker_container():
+        return "/log"
+
     _gen_dir(_SOCIAL_MANAGER_CFG["log_dir"])
 
     return _SOCIAL_MANAGER_CFG["log_dir"]

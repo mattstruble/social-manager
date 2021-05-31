@@ -8,7 +8,7 @@ from types import FunctionType
 import feedparser
 
 from social_manager.config_reader import ConfigReader
-from social_manager.utils import get_data_dir, setup_logger
+from social_manager.utils import get_data_dir, setup_logger, CONFIG_DIR
 
 logger = logging.getLogger(__name__)
 setup_logger(logger)
@@ -24,7 +24,7 @@ class RSSItem:
 
 class RSSReader:
     def __init__(self, rss_parser: FunctionType):
-        self.config = ConfigReader("configs/rss.cfg")
+        self.config = ConfigReader(os.path.join(CONFIG_DIR,"rss.cfg"))
 
         self.feed_url = self.config["feed_url"]
         self.feed_limit = int(self.config["feed_limit"])

@@ -18,7 +18,7 @@ from sklearn.preprocessing import scale
 from tqdm import tqdm
 
 from social_manager.mdk.preprocessing import preprocess
-from social_manager.utils import setup_logger
+from social_manager.utils import setup_logger, is_docker_container
 
 logger = logging.getLogger(__name__)
 setup_logger(logger)
@@ -59,6 +59,8 @@ class __Model:
     @property
     @lru_cache(maxsize=None)
     def base_dir(self):
+        if is_docker_container():
+            return "/models"
         return os.path.join(site_data_dir(appname="social_manager"), "models")
 
     @property
